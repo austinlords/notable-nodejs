@@ -1,7 +1,13 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const config = require("config");
+const notes = require("./routes/notes");
 
-app.get("/", (req, res) => res.send("Hello World!"));
+app.use("/api/notes", notes);
 
-app.listen(port, () => console.log(`Example app listening on port ${port}`));
+const port = process.env.PORT || config.get("port");
+const server = app.listen(port, () =>
+  console.log(`Example app listening on port ${port}`)
+);
+
+module.exports = server;
