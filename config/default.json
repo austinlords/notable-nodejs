@@ -1,4 +1,4 @@
 {
-  "db": "mongodb://localhost/notable",
+  "db": "mongodb+srv://austin:notes@notes-7bdpz.mongodb.net/test?retryWrites=true&w=majority",
   "port": "3000"
 }

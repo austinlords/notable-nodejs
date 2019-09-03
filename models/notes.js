@@ -20,7 +20,7 @@ const Note = mongoose.model(
       maxlength: 255
     },
     updated: {
-      type: Date,
+      type: String,
       required: true
     },
     user: {
@@ -36,7 +36,7 @@ function validateNote(note) {
       .required(),
     content: Joi.string().required(),
     preview: Joi.string().max(255),
-    updated: Joi.date().required(),
+    updated: Joi.string().required(),
     user: Joi.string()
   };
 
