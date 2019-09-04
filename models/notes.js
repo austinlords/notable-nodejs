@@ -19,10 +19,6 @@ const Note = mongoose.model(
       trim: true,
       maxlength: 255
     },
-    updated: {
-      type: String,
-      required: true
-    },
     user: {
       type: String
     }

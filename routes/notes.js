@@ -1,5 +1,4 @@
 const moment = require("moment");
-const mongoose = require("mongoose");
 const { Note, validateNote } = require("../models/notes");
 const express = require("express");
 const router = express.Router();
@@ -13,16 +12,21 @@ router.get("/", (req, res) => {
   res.send("hello world");
 });
 
-router.post("/", (req, res) => {
-  const post = req.body;
+router.post("/", async (req, res) => {
+  const { error } = validateNote(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
-  const error = validateNote(post).error;
-  if (error) {
-    res.status(400);
-    return res.send(error.details[0].message);
-  }
+  const newNote = new Note({
+    title: req.body.title,
+    content: req.body.content,
+    updated: moment().toJSON,
+    preview: req.body.preview,
+    user: req.body.user
+  });
+  await newNote.save();
+  console.log(newNote);
 
-  res.send(post);
+  res.send(newNote);
 });
 
 module.exports = router;

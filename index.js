@@ -9,11 +9,14 @@ const notes = require("./routes/notes");
 const MONGODB_URI = config.get("db");
 const PORT = config.get("port");
 
-mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
+mongoose
+  .connect(MONGODB_URI, { useNewUrlParser: true })
+  .then(() => console.log(`connected to ${MONGODB_URI}`))
+  .catch(() => console.log("unable to connect to MongoDB :("));
 
-app.use(express.static("public"));
-app.use(bodyParser.json(), cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(cors());
 
 app.use("/api/notes", notes);
 
