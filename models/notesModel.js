@@ -6,34 +6,42 @@ const Note = mongoose.model(
   new mongoose.Schema({
     title: {
       type: String,
-      maxlength: 50,
+      maxlength: 255,
       required: true,
       trim: true
     },
     content: {
-      type: String,
+      type: Object,
       required: true
     },
-    preview: {
-      type: String,
-      trim: true,
-      maxlength: 255
+    tags: {
+      type: Array,
+      required: true
+    },
+    col: {
+      type: Object,
+      required: true
     },
     user: {
       type: String
-    }
+    },
+    updated: String
   })
 );
 
 function validateNote(note) {
   const schema = {
+    _id: Joi.string(),
     title: Joi.string()
-      .max(50)
+      .max(255)
       .required(),
-    content: Joi.string().required(),
-    preview: Joi.string().max(255),
-    updated: Joi.string().required(),
+    content: Joi.object().required(),
+    tags: Joi.array().required(),
+    collection: Joi.object().required(),
     user: Joi.string()
+      .email()
+      .required(),
+    updated: Joi.string()
   };
 
   return Joi.validate(note, schema);

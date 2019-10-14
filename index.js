@@ -4,15 +4,15 @@ const config = require("config");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const notes = require("./routes/notes");
+const notes = require("./routes/notesRoute");
 
 const MONGODB_URI = config.get("db");
 const PORT = config.get("port");
 
 mongoose
-  .connect(MONGODB_URI, { useNewUrlParser: true })
+  .connect(MONGODB_URI, { useNewUrlParser: true, useFindAndModify: false })
   .then(() => console.log(`connected to ${MONGODB_URI}`))
-  .catch(() => console.log("unable to connect to MongoDB :("));
+  .catch(err => console.log(`unable to connect to MongoDB :( ${err}`));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

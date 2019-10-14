@@ -1,4 +1,5 @@
 {
-  "db": "mongodb+srv://austin:notes@notes-7bdpz.mongodb.net/test?retryWrites=true&w=majority",
-  "port": "4000"
+  "db": "mongodb://localhost:27017/notable",
+  "port": "4000",
+  "jwtPrivateKey": "unsecureKey"
 }
