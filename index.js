@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const notes = require("./routes/notesRoute");
+const users = require("./routes/usersRoute");
 
 const MONGODB_URI = config.get("onlineDB");
 const PORT = config.get("port");
@@ -19,6 +20,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use("/api/notes", notes);
+app.use("/api/users", users);
 
 const port = process.env.PORT || PORT;
 const server = app.listen(port, () =>

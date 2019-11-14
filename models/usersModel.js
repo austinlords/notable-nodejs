@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
-const collectionSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -11,26 +11,26 @@ const collectionSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 50
-  }
+    required: true
+  },
+  isAdmin: Boolean
 });
 
-collectionSchema.methods.generateAuthToken = function() {
+userSchema.methods.generateAuthToken = function() {
   const token = jwt.sign(
     {
       _id: this._id,
-      email: this.email
+      email: this.email,
+      isAdmin: this.isAdmin
     },
     config.get("jwtPrivateKey")
   );
   return token;
 };
 
-const Collection = mongoose.model("Collection", collectionSchema);
+const User = mongoose.model("User", userSchema);
 
-function validateCollection(collection) {
+function validateUser(user) {
   const schema = {
     email: Joi.string()
       .email()
@@ -38,9 +38,10 @@ function validateCollection(collection) {
     password: Joi.string()
       .min(5)
       .max(255)
-      .required()
+      .required(),
+    isAdmin: Joi.bool()
   };
-  return Joi.validate(collection, schema);
+  return Joi.validate(user, schema);
 }
 
-module.exports = { Collection, validateCollection };
+module.exports = { User, validateUser };
