@@ -6,7 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const notes = require("./routes/notesRoute");
 
-const MONGODB_URI = config.get("db");
+const MONGODB_URI = config.get("onlineDB");
 const PORT = config.get("port");
 
 mongoose

@@ -1,5 +1,6 @@
 {
   "db": "mongodb://localhost:27017/notable",
+  "onlineDB": "mongodb+srv://austin:notes@notes-7bdpz.mongodb.net/test",
   "port": "4000",
   "jwtPrivateKey": "unsecureKey"
 }
