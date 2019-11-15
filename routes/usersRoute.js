@@ -1,5 +1,6 @@
 const { User, validateUser } = require("../models/usersModel");
 const bcrypt = require("bcrypt");
+const moment = require("moment");
 const express = require("express");
 const auth = require("../middleware/auth");
 const router = express.Router();
@@ -30,19 +31,28 @@ router.post("/", async (req, res) => {
   user = new User({
     email: req.body.email,
     password: req.body.password,
-    isAdmin: req.body.isAdmin || false
+    isAdmin: req.body.isAdmin
   });
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
-  await user.save();
+  await user.save(function savingUser(error, user) {
+    if (error) {
+      console.log("an error occured when saving user: " + error);
+      return res
+        .status(500)
+        .send("an error occured when creating your account. please try again");
+    } else {
+      console.log("New User created! Welcome " + user.email);
+    }
+  });
 
   const token = user.generateAuthToken();
-  console.log("New User created! Welcome " + user.email);
 
   res.header("Authorization", token).send({
     _id: user._id,
     email: user.email,
-    isAdmin: user.isAdmin
+    isAdmin: user.isAdmin,
+    userCreated: user.userCreated
   });
 });
 

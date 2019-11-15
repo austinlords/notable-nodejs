@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Joi = require("@hapi/joi");
+const moment = require("moment");
 
 const Note = mongoose.model(
   "Notes",
@@ -25,7 +26,10 @@ const Note = mongoose.model(
     user: {
       type: String
     },
-    updated: String
+    updated: {
+      type: String,
+      default: moment().format()
+    }
   })
 );
 
