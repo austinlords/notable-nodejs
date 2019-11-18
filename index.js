@@ -6,6 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const notes = require("./routes/notesRoute");
 const users = require("./routes/usersRoute");
+const collections = require("./routes/collectionsRoute");
 
 const MONGODB_URI = process.env.MONGO || config.get("db");
 const PORT = config.get("port");
@@ -26,6 +27,7 @@ app.use(cors());
 
 app.use("/api/notes", notes);
 app.use("/api/users", users);
+app.use("/api/collections", collections);
 
 const port = process.env.PORT || PORT;
 const server = app.listen(port, () =>

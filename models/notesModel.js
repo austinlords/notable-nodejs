@@ -42,9 +42,7 @@ function validateNote(note) {
     content: Joi.object().required(),
     tags: Joi.array().required(),
     collection: Joi.object().required(),
-    user: Joi.string()
-      .email()
-      .required(),
+    user: Joi.string().email(),
     updated: Joi.string()
   };
 

@@ -1,7 +1,6 @@
 const Joi = require("@hapi/joi");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const config = require("config");
 const moment = require("moment");
 
 const userSchema = new mongoose.Schema({
@@ -29,7 +28,8 @@ userSchema.methods.generateAuthToken = function() {
     {
       _id: this._id,
       email: this.email,
-      isAdmin: this.isAdmin
+      isAdmin: this.isAdmin,
+      userCreated: this.userCreated
     },
     process.env.JWT
   );

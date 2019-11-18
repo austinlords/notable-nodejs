@@ -10,7 +10,7 @@ module.exports = function(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT);
     req.user = decoded;
-    console.log("protected route accessed! User: " + req.user.email);
+    console.log("protected route accessed! User: " + req.user._id);
     next();
   } catch (ex) {
     return res.status(400).send("Invalid token provided");

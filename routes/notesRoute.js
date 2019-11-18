@@ -16,11 +16,9 @@ router.get("/", auth, async (req, res) => {
       .select("-__v")
       .sort("-updated");
   } catch (ex) {
-    return res
-      .status(400)
-      .send("Something went wrong. No notes found for this user.");
+    return res.status(404).send("No notes found for this user.");
   }
-  res.send(notes);
+  return res.send(notes);
 });
 
 router.post("/", auth, async (req, res) => {
@@ -30,21 +28,20 @@ router.post("/", auth, async (req, res) => {
 
   // create new note from mongoose model
   const newNote = new Note({
-    title: req.body.title,
+    title: req.body.title.trim(),
     content: req.body.content,
     tags: req.body.tags,
     col: req.body.collection,
-    user: req.body.user
+    user: req.user.email.trim(),
+    updated: moment().format()
   });
   await newNote.save(function saveNote(error, note) {
-    if (error) {
-      console.log("an error occured when saving the note: " + error);
+    if (error)
       return res
         .status(500)
         .send("an error occured when saving the note. please try again");
-    } else {
-      console.log(`New Note created! ~~ ${note.title}`);
-    }
+
+    console.log(`New Note created! ~~ ${note.title}`);
   });
 
   return res.send(newNote);
@@ -75,22 +72,21 @@ router.put("/:id", auth, async (req, res) => {
       content: req.body.content,
       tags: req.body.tags,
       col: req.body.collection,
-      user: req.body.user,
+      user: req.user.email,
       updated: moment().format()
     },
     { new: true },
-    function noteFoundAndUpdated(error, note) {
-      if (error) {
+    function updateNote(error, note) {
+      if (error)
         return res
           .status(500)
           .send("internal server error updating note. please try again");
-      } else {
-        console.log(`Note updated! ~~ ${note.title}`);
-      }
-    }
-  );
 
-  res.send(note);
+      console.log(`Note updated! ~~ ${note.title}`);
+    }
+  ).select("-__v");
+
+  return res.send(note);
 });
 
 router.delete("/:id", auth, async (req, res) => {
@@ -106,22 +102,19 @@ router.delete("/:id", auth, async (req, res) => {
       .status(403)
       .send("You do not have permission to delete this note.");
 
-  note = await Note.findByIdAndRemove(
-    req.params.id,
-    function noteFoundAndDeleted(error, note) {
-      if (error) {
-        return res
-          .status(500)
-          .send(
-            "Something went wrong. Could not delete note. Please try again"
-          );
-      } else {
-        console.log(`Note deleted! ~~ ${note.title}`);
-      }
-    }
-  );
+  note = await Note.findByIdAndRemove(req.params.id, function deleteNote(
+    error,
+    note
+  ) {
+    if (error)
+      return res
+        .status(500)
+        .send("Something went wrong. Could not delete note.");
 
-  res.send(note);
+    console.log(`Note deleted! ~~ ${note.title}`);
+  }).select("-__v");
+
+  return res.send(note);
 });
 
 router.get("/:id", auth, async (req, res) => {
@@ -138,7 +131,7 @@ router.get("/:id", auth, async (req, res) => {
       .status(403)
       .send("You do not have permission to view this note.");
 
-  res.send(note);
+  return res.send(note);
 });
 
 module.exports = router;

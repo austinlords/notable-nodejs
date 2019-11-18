@@ -1,6 +1,5 @@
 const { User, validateUser } = require("../models/usersModel");
 const bcrypt = require("bcrypt");
-const moment = require("moment");
 const express = require("express");
 const auth = require("../middleware/auth");
 const router = express.Router();
@@ -20,7 +19,7 @@ router.get("/me", auth, async (req, res) => {
   res.send(user);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
