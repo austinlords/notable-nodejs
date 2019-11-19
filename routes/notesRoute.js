@@ -4,29 +4,21 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
 
-router.use(function timeLog(req, res, next) {
-  console.log("Notes API accessed: ", new Date().toLocaleString());
-  next();
-});
-
 router.get("/", auth, async (req, res) => {
-  // find all notes by user
   try {
     var notes = await Note.find({ user: req.user.email })
       .select("-__v")
       .sort("-updated");
+    return res.send(notes);
   } catch (ex) {
     return res.status(404).send("No notes found for this user.");
   }
-  return res.send(notes);
 });
 
 router.post("/", auth, async (req, res) => {
-  // request formatted correctly?
   const { error } = validateNote(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  // create new note from mongoose model
   const newNote = new Note({
     title: req.body.title.trim(),
     content: req.body.content,
@@ -36,23 +28,16 @@ router.post("/", auth, async (req, res) => {
     updated: moment().format()
   });
   await newNote.save(function saveNote(error, note) {
-    if (error)
-      return res
-        .status(500)
-        .send("an error occured when saving the note. please try again");
+    if (error) return res.status(500).send("Error. please try again");
 
-    console.log(`New Note created! ~~ ${note.title}`);
+    return res.send(note);
   });
-
-  return res.send(newNote);
 });
 
 router.put("/:id", auth, async (req, res) => {
-  // request formatted correctly?
   const { error } = validateNote(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  // find note in database
   try {
     var note = await Note.findById(req.params.id);
   } catch (ex) {
@@ -65,7 +50,7 @@ router.put("/:id", auth, async (req, res) => {
       .status(403)
       .send("You do not have permission to edit this note.");
 
-  note = await Note.findByIdAndUpdate(
+  await Note.findByIdAndUpdate(
     req.params.id,
     {
       title: req.body.title,
@@ -77,16 +62,11 @@ router.put("/:id", auth, async (req, res) => {
     },
     { new: true },
     function updateNote(error, note) {
-      if (error)
-        return res
-          .status(500)
-          .send("internal server error updating note. please try again");
+      if (error) return res.status(500).send("Error. Please try again");
 
-      console.log(`Note updated! ~~ ${note.title}`);
+      return res.send(note);
     }
-  ).select("-__v");
-
-  return res.send(note);
+  );
 });
 
 router.delete("/:id", auth, async (req, res) => {
@@ -102,23 +82,14 @@ router.delete("/:id", auth, async (req, res) => {
       .status(403)
       .send("You do not have permission to delete this note.");
 
-  note = await Note.findByIdAndRemove(req.params.id, function deleteNote(
-    error,
-    note
-  ) {
-    if (error)
-      return res
-        .status(500)
-        .send("Something went wrong. Could not delete note.");
+  await Note.findByIdAndRemove(req.params.id, function deleteNote(error, note) {
+    if (error) return res.status(500).send("Error. Could not delete note.");
 
-    console.log(`Note deleted! ~~ ${note.title}`);
-  }).select("-__v");
-
-  return res.send(note);
+    return res.send(note);
+  });
 });
 
 router.get("/:id", auth, async (req, res) => {
-  // find note in database
   try {
     var note = await Note.findById(req.params.id).select("-__v");
   } catch (ex) {

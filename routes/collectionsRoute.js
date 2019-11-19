@@ -13,11 +13,10 @@ router.get("/", auth, async (req, res) => {
     var collections = await Collection.find({ user: req.user.email })
       .select("-__v")
       .sort("name");
+    return res.send(collections);
   } catch (ex) {
     return res.status(404).send("No collections found for this user");
   }
-
-  return res.send(collections);
 });
 
 router.post("/", auth, async (req, res) => {
@@ -102,6 +101,28 @@ router.put("/:id", auth, async (req, res) => {
   );
 
   return res.send(collection);
+});
+
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    var collection = await Collection.findById(req.params.id);
+  } catch (ex) {
+    res.status(400).send("No collection found with provided ID");
+  }
+
+  // authorization
+  if (collection.user !== req.user.email)
+    return res.status(403).send("You cannot delete this note");
+
+  await Collection.findByIdAndRemove(req.params.id, function deleteCollection(
+    err,
+    collection
+  ) {
+    if (err) return res.status(500).send("Error. Could not delete note.");
+
+    console.log("Note deleted! ~~ " + collection.name);
+    return res.send(collection);
+  });
 });
 
 module.exports = router;
