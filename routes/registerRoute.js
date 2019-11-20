@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
     if (error) return res.status(500).send("Error. Please try again");
 
     const token = user.generateAuthToken();
-    return res.header("Authorization", token).send({
+    return res.cookie("token", token, { httpOnly: true }).send({
       _id: user._id,
       email: user.email,
       isAdmin: user.isAdmin,

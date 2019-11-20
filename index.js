@@ -3,6 +3,7 @@ const app = express();
 const config = require("config");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const notes = require("./routes/notesRoute");
 const register = require("./routes/registerRoute");
@@ -24,6 +25,7 @@ mongoose
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(cors());
 
 app.use("/api/notes", notes);
