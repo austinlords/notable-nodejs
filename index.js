@@ -21,7 +21,7 @@ mongoose
     useUnifiedTopology: true
   })
   .then(() => console.log(`connected to ${MONGODB_URI}`))
-  .catch(err => console.log(`unable to connect to MongoDB---${err}`));
+  .catch(err => console.log(`unable to connect to MongoDB---${err.message}`));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -32,10 +32,22 @@ app.use("/api/notes", notes);
 app.use("/api/register", register);
 app.use("/api/login", login);
 app.use("/api/collections", collections);
+app.use(function(err, req, res, next) {
+  if (err) return res.json({ message: err.message });
+});
 
 const port = process.env.PORT || PORT;
 const server = app.listen(port, () =>
   console.log(`Notable API listening on port ${port}`)
 );
+
+process
+  .on("unhandledRejection", err => {
+    console.error(err.message);
+  })
+  .on("uncaughtException", err => {
+    console.error(err.message);
+    process.exit(1);
+  });
 
 module.exports = server;
