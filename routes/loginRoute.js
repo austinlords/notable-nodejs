@@ -6,24 +6,29 @@ const { asyncWrap } = require("../middleware/errorHandling");
 
 router.post(
   "/",
-  asyncWrap(async (req, res) => {
+  asyncWrap(async (req, res, next) => {
     const { error } = validateUser(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) {
+      res.status(400);
+      throw new Error(error.details[0].message);
+    }
 
     let user = await User.findOne({ email: req.body.email });
-    if (!user)
-      return res.status(400).send("User does not exist! Please register");
+    if (!user) {
+      res.status(400);
+      throw new Error("User does not exist! Please register");
+    }
 
     await bcrypt.compare(
       req.body.password,
       user.password,
       function comparePasswords(err, isMatch) {
-        if (err) return res.send(err.message);
+        if (err) return res.status(500).json("Please try again.");
 
-        if (!isMatch) return res.status(401).send("Invalid password.");
+        if (!isMatch) return res.status(401).json("Invalid password.");
 
         var token = user.generateAuthToken();
-        return res.cookie("token", token).send({
+        return res.cookie("token", token).json({
           _id: user._id,
           email: user.email,
           isAdmin: user.isAdmin,

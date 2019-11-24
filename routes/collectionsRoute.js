@@ -6,123 +6,105 @@ const {
 } = require("../models/collectionsModel");
 const moment = require("moment");
 const auth = require("../middleware/auth");
+const { asyncWrap } = require("../middleware/errorHandling");
 
-router.get("/", auth, async (req, res) => {
-  // find all collections by user
-  try {
+router.get(
+  "/",
+  auth,
+  asyncWrap(async (req, res) => {
     var collections = await Collection.find({ user: req.user.email })
       .select("-__v")
       .sort("name");
-    return res.send(collections);
-  } catch (ex) {
-    return res.status(404).send("No collections found for this user");
-  }
-});
 
-router.post("/", auth, async (req, res) => {
-  // req formatted correctly?
-  const { error } = validateCollection(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+    return res.json(collections);
+  })
+);
 
-  // auth-token matches user/email in request?
-  if (req.user.email !== req.body.user)
-    return res
-      .status(400)
-      .send(
-        "Auth token does not match user/email in request. Please try again."
-      );
+router.post(
+  "/",
+  auth,
+  asyncWrap(async (req, res) => {
+    const { error } = validateCollection(req.body);
+    if (error) {
+      res.status(400);
+      throw new Error(error.details[0].message);
+    }
 
-  try {
-    // normalize data
-    var reqName = req.body.name.toLowerCase().trim();
+    const reqName = req.body.name.toLowerCase().trim();
 
-    var collection = await Collection.find({
+    let collection = await Collection.find({
       user: req.user.email,
       name: reqName
     });
+    if (collection.length) {
+      res.status(400);
+      throw new Error("Collection with this name already exists!");
+    }
 
-    if (collection.length)
-      return res
-        .status(400)
-        .send(
-          "Collection with this name already exists! Cannot create collection"
-        );
-  } catch (ex) {
-    return res.status(500).send("Internal server error, please try again.");
-  }
-
-  collection = new Collection({
-    name: reqName,
-    color: req.body.color,
-    user: req.user.email
-  });
-
-  collection = await collection.save();
-
-  res.send(collection);
-});
-
-router.put("/:id", auth, async (req, res) => {
-  // req formatted correctly?
-  const { error } = validateCollection(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  // auth-token matches user/email in request?
-  if (req.user.email !== req.body.user)
-    return res
-      .status(400)
-      .send(
-        "Auth token does not match user/email in request. Please try again."
-      );
-
-  // normalize data
-  var reqName = req.body.name.toLowerCase().trim();
-
-  try {
-    var collection = await Collection.findById(req.params.id);
-  } catch (ex) {
-    return res.status(404).send("Collection with provided ID does not exist.");
-  }
-
-  collection = await Collection.findByIdAndUpdate(
-    req.params.id,
-    {
+    let newCollection = await new Collection({
       name: reqName,
       color: req.body.color,
-      user: req.user.email,
-      updated: moment().format()
-    },
-    { new: true },
-    function updatedCollection(error, collection) {
-      if (error) return res.status(500).send("could not update collection");
+      user: req.user.email
+    }).save();
 
-      console.log(`Collection updated ~~ ${collection.name}`);
+    return res.json(newCollection);
+  })
+);
+
+router.put(
+  "/:id",
+  auth,
+  asyncWrap(async (req, res) => {
+    const { error } = validateCollection(req.body);
+    if (error) {
+      res.status(400);
+      throw new Error(error.details[0].message);
     }
-  );
 
-  return res.send(collection);
-});
+    const reqName = req.body.name.toLowerCase().trim();
 
-router.delete("/:id", auth, async (req, res) => {
-  try {
-    var collection = await Collection.findById(req.params.id);
-  } catch (ex) {
-    res.status(400).send("No collection found with provided ID");
-  }
+    let collection = await Collection.findById(req.params.id);
 
-  // authorization
-  if (collection.user !== req.user.email)
-    return res.status(403).send("You cannot delete this note");
+    if (!collection) {
+      res.status(404);
+      throw new Error("Collection with provided ID does not exist.");
+    }
 
-  await Collection.findByIdAndRemove(req.params.id, function deleteCollection(
-    err,
-    collection
-  ) {
-    if (err) return res.status(500).send("Error. Could not delete note.");
+    collection = await Collection.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: reqName,
+        color: req.body.color || collection.color,
+        user: req.user.email,
+        updated: moment().format()
+      },
+      { new: true }
+    );
 
-    console.log("Note deleted! ~~ " + collection.name);
-    return res.send(collection);
-  });
-});
+    return res.json(collection);
+  })
+);
+
+router.delete(
+  "/:id",
+  auth,
+  asyncWrap(async (req, res) => {
+    let collection = await Collection.findById(req.params.id);
+
+    if (!collection) {
+      res.status(404);
+      throw new Error("Collection with provided ID does not exist.");
+    }
+
+    if (collection.user !== req.user.email) {
+      res.status(403);
+      throw new Error("You cannot delete this note");
+    }
+
+    collection = await Collection.findByIdAndRemove(req.params.id);
+
+    return res.json(collection);
+  })
+);
 
 module.exports = router;

@@ -9,14 +9,11 @@ router.get(
   "/",
   auth,
   asyncWrap(async (req, res) => {
-    try {
-      var notes = await Note.find({ user: req.user.email })
-        .select("-__v")
-        .sort("-updated");
-      return res.send(notes);
-    } catch (ex) {
-      return res.status(404).send("No notes found for this user.");
-    }
+    const notes = await Note.find({ user: req.user.email })
+      .select("-__v")
+      .sort("-updated");
+
+    return res.json(notes);
   })
 );
 
@@ -25,21 +22,21 @@ router.post(
   auth,
   asyncWrap(async (req, res) => {
     const { error } = validateNote(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) {
+      res.status(400);
+      throw new Error(error.details[0].message);
+    }
 
-    const newNote = new Note({
+    const newNote = await new Note({
       title: req.body.title.trim(),
       content: req.body.content,
       tags: req.body.tags,
       col: req.body.collection,
       user: req.user.email.trim(),
       updated: moment().format()
-    });
-    await newNote.save(function saveNote(error, note) {
-      if (error) return res.status(500).send("Error. please try again");
+    }).save();
 
-      return res.send(note);
-    });
+    return res.json(newNote);
   })
 );
 
@@ -48,21 +45,24 @@ router.put(
   auth,
   asyncWrap(async (req, res) => {
     const { error } = validateNote(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-
-    try {
-      var note = await Note.findById(req.params.id);
-    } catch (ex) {
-      return res.status(404).send("Note not found. Please send a valid ID.");
+    if (error) {
+      res.status(400);
+      throw new Error(error.details[0].message);
     }
 
-    // authorization
-    if (note.user !== req.user.email)
-      return res
-        .status(403)
-        .send("You do not have permission to edit this note.");
+    let note = await Note.findById(req.params.id);
 
-    await Note.findByIdAndUpdate(
+    if (!note) {
+      res.status(404);
+      throw new Error("Note with provided ID does not exist.");
+    }
+
+    if (note.user !== req.user.email) {
+      res.status(403);
+      throw new Error("You do not have permission to edit this note.");
+    }
+
+    note = await Note.findByIdAndUpdate(
       req.params.id,
       {
         title: req.body.title,
@@ -72,13 +72,10 @@ router.put(
         user: req.user.email,
         updated: moment().format()
       },
-      { new: true },
-      function updateNote(error, note) {
-        if (error) return res.status(500).send("Error. Please try again");
-
-        return res.send(note);
-      }
+      { new: true }
     );
+
+    return res.json(note);
   })
 );
 
@@ -86,26 +83,21 @@ router.delete(
   "/:id",
   auth,
   asyncWrap(async (req, res) => {
-    try {
-      var note = await Note.findById(req.params.id);
-    } catch (ex) {
-      return res.status(400).send("Note not found. Please send a valid ID.");
+    let note = await Note.findById(req.params.id);
+
+    if (!note) {
+      res.status(404);
+      throw new Error("Note with provided ID does not exist.");
     }
 
-    // authorization
-    if (req.user.email !== note.user)
-      return res
-        .status(403)
-        .send("You do not have permission to delete this note.");
+    if (req.user.email !== note.user) {
+      res.status(403);
+      throw new Error("You do not have permission to delete this note.");
+    }
 
-    await Note.findByIdAndRemove(req.params.id, function deleteNote(
-      error,
-      note
-    ) {
-      if (error) return res.status(500).send("Error. Could not delete note.");
+    note = await Note.findByIdAndRemove(req.params.id);
 
-      return res.send(note);
-    });
+    return res.json(note);
   })
 );
 
@@ -113,19 +105,19 @@ router.get(
   "/:id",
   auth,
   asyncWrap(async (req, res) => {
-    try {
-      var note = await Note.findById(req.params.id).select("-__v");
-    } catch (ex) {
-      return res.status(404).send("Note with given ID was not found");
+    let note = await Note.findById(req.params.id).select("-__v");
+
+    if (!note) {
+      res.status(404);
+      throw new Error("Note with provided ID does not exist.");
     }
 
-    // authorization
-    if (req.user.email !== note.user)
-      return res
-        .status(403)
-        .send("You do not have permission to view this note.");
+    if (req.user.email !== note.user) {
+      res.status(403);
+      throw new Error("You do not have permission to view this note.");
+    }
 
-    return res.send(note);
+    return res.json(note);
   })
 );
 
