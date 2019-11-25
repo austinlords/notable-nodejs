@@ -23,9 +23,15 @@ router.post(
       req.body.password,
       user.password,
       function comparePasswords(err, isMatch) {
-        if (err) return res.status(500).json("Please try again.");
+        if (err)
+          return res.status(500).json({
+            message: "Please try again."
+          });
 
-        if (!isMatch) return res.status(401).json("Invalid password.");
+        if (!isMatch)
+          return res.status(401).json({
+            message: "Invalid password."
+          });
 
         var token = user.generateAuthToken();
         return res.cookie("token", token).json({
