@@ -34,7 +34,7 @@ router.post(
           });
 
         var token = user.generateAuthToken();
-        return res.cookie("token", token).json({
+        return res.cookie("token", token, { httpOnly: true }).json({
           _id: user._id,
           email: user.email,
           isAdmin: user.isAdmin,

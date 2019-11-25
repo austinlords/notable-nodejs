@@ -10,6 +10,7 @@ const notes = require("./routes/notesRoute");
 const register = require("./routes/registerRoute");
 const login = require("./routes/loginRoute");
 const logout = require("./routes/logoutRoute");
+const user = require("./routes/userRoute");
 const collections = require("./routes/collectionsRoute");
 
 const MONGODB_URI = process.env.MONGO || config.get("db");
@@ -51,6 +52,7 @@ app.use("/api/notes", notes);
 app.use("/api/register", register);
 app.use("/api/login", login);
 app.use("/api/logout", logout);
+app.use("/api/user", user);
 app.use("/api/collections", collections);
 app.use(catchErrors);
 
