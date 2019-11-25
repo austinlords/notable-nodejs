@@ -34,12 +34,17 @@ router.post(
           });
 
         var token = user.generateAuthToken();
-        return res.cookie("token", token, { httpOnly: true }).json({
-          _id: user._id,
-          email: user.email,
-          isAdmin: user.isAdmin,
-          userCreated: user.userCreated
-        });
+        return res
+          .cookie("token", token, {
+            httpOnly: true,
+            expires: new Date(Date.now() + 2592000000)
+          })
+          .json({
+            _id: user._id,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            userCreated: user.userCreated
+          });
       }
     );
   })
