@@ -37,6 +37,11 @@ app.use(
   })
 );
 
+app.use(function(req, res, next) {
+  res.set("Access-Control-Allow-Origin", "http://localhost:3000");
+  next();
+});
+
 app.use("/api/notes", notes);
 app.use("/api/register", register);
 app.use("/api/login", login);
