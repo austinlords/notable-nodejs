@@ -7,8 +7,6 @@ const Note = mongoose.model(
   new mongoose.Schema({
     title: {
       type: String,
-      maxlength: 255,
-      required: true,
       trim: true
     },
     content: {
@@ -36,9 +34,7 @@ const Note = mongoose.model(
 function validateNote(note) {
   const schema = {
     _id: Joi.string(),
-    title: Joi.string()
-      .max(255)
-      .required(),
+    title: Joi.string(),
     content: Joi.object().required(),
     tags: Joi.array().required(),
     collection: Joi.object().required(),
