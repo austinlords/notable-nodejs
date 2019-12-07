@@ -28,6 +28,7 @@ mongoose
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.text());
 app.use(cookieParser());
 
 app.use(
