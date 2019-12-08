@@ -33,16 +33,10 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://austinlords.com"],
+    origin: ["http://localhost:3000", "https://www.austinlords.com"],
     credentials: true
   })
 );
-
-app.use(function(req, res, next) {
-  res.set("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
 
 app.use("/api/notes", notes);
 app.use("/api/register", register);

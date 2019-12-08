@@ -28,10 +28,10 @@ router.post(
     }
 
     const newNote = await new Note({
-      title: req.body.title.trim(),
+      title: req.body.title || "",
       content: req.body.content,
-      tags: req.body.tags,
-      col: req.body.collection,
+      tags: req.body.tags || [],
+      col: req.body.collection || Object.create({}),
       user: req.user.email.trim(),
       updated: moment().format()
     }).save();
@@ -62,7 +62,7 @@ router.put(
       throw new Error("You do not have permission to edit this note.");
     }
 
-    note = await Note.findByIdAndUpdate(
+    const updatedNote = await Note.findByIdAndUpdate(
       req.params.id,
       {
         title: req.body.title,
@@ -75,7 +75,7 @@ router.put(
       { new: true }
     );
 
-    return res.json(note);
+    return res.json(updatedNote);
   })
 );
 

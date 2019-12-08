@@ -3,25 +3,28 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
+    userCreated: {
+      type: String,
+      default: moment().format("YYYY-MM-DD")
+    }
   },
-  password: {
-    type: String,
-    required: true
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
-  },
-  userCreated: {
-    type: String,
-    default: moment().format("YYYY-MM-DD")
-  }
-});
+  { minimize: false }
+);
 
 userSchema.methods.generateAuthToken = function() {
   const token = jwt.sign(

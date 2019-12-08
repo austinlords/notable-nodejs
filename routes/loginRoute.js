@@ -38,8 +38,7 @@ router.post(
           .cookie("token", token, {
             httpOnly: true,
             expires: new Date(Date.now() + 2592000000),
-            sameSite: "none",
-            secure: true
+            sameSite: "none"
           })
           .json({
             _id: user._id,

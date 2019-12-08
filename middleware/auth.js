@@ -23,7 +23,6 @@ module.exports = asyncWrap(async function(req, res, next) {
 
   if (!user) {
     res.status(400);
-    res.cookie("token", "", { expires: Date.now() });
     throw new Error("User not found in database.");
   } else {
     req.user = user;
@@ -34,7 +33,6 @@ module.exports = asyncWrap(async function(req, res, next) {
         "Auth token does not match user/email in request. Please try again."
       );
     }
-    console.log("protected route accessed! User: " + req.user.email);
     next();
   }
 });

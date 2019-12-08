@@ -4,31 +4,34 @@ const moment = require("moment");
 
 const Note = mongoose.model(
   "Notes",
-  new mongoose.Schema({
-    title: {
-      type: String,
-      trim: true
+  new mongoose.Schema(
+    {
+      title: {
+        type: String,
+        trim: true
+      },
+      content: {
+        type: Object,
+        required: true
+      },
+      tags: {
+        type: Array,
+        required: true
+      },
+      col: {
+        type: Object,
+        required: true
+      },
+      user: {
+        type: String
+      },
+      updated: {
+        type: String,
+        default: moment().format()
+      }
     },
-    content: {
-      type: Object,
-      required: true
-    },
-    tags: {
-      type: Array,
-      required: true
-    },
-    col: {
-      type: Object,
-      required: true
-    },
-    user: {
-      type: String
-    },
-    updated: {
-      type: String,
-      default: moment().format()
-    }
-  })
+    { minimize: false }
+  )
 );
 
 function validateNote(note) {
