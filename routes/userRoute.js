@@ -12,8 +12,8 @@ router.get(
       "-password -__v"
     );
     if (!user) {
-      res.status(400);
-      throw new Error("User does not exist! Please register");
+      res.status(200);
+      return res.json();
     }
 
     return res.json(user);

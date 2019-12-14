@@ -7,16 +7,22 @@ module.exports = asyncWrap(async function(req, res, next) {
   if (!config.get("requiresAuth")) return next();
 
   const token = req.cookies.token;
-  if (!token) {
+  const reqXAuth = req.get("x-auth");
+  if (!token && !reqXAuth) {
     res.status(401);
     throw new Error("Access denied. No token provided");
   }
 
   try {
-    var decoded = jwt.verify(token, process.env.JWT);
+    var decoded = jwt.verify(token || reqXAuth, process.env.JWT);
   } catch (error) {
-    res.status(400);
-    throw new Error("Invalid auth token");
+    if (req.baseUrl.includes("user")) {
+      res.status(200);
+      return res.json({ error: "User not logged in" });
+    } else {
+      res.status(400);
+      throw new Error("Invalid auth token");
+    }
   }
 
   const user = await User.findById(decoded._id, "-__v -password");
@@ -33,6 +39,8 @@ module.exports = asyncWrap(async function(req, res, next) {
         "Auth token does not match user/email in request. Please try again."
       );
     }
+    res.set("x-auth", token || reqXAuth);
+    res.set("access-control-expose-headers", "x-auth");
     next();
   }
 });

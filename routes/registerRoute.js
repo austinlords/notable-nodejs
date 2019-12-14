@@ -37,6 +37,8 @@ router.post(
         sameSite: "none",
         secure: true
       })
+      .set("x-auth", token)
+      .set("access-control-expose-headers", "x-auth")
       .json({
         _id: user._id,
         email: user.email,
